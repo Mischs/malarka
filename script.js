@@ -16,6 +16,10 @@ const baHandle = document.getElementById('baHandle');
 const contactForm = document.getElementById('contactForm');
 const modalForm = document.getElementById('modalForm');
 
+// Spray paint effect
+let lastScrollY = window.scrollY;
+let sprayTimeout = null;
+
 // ========================================
 // Initialize
 // ========================================
@@ -27,6 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initPortfolioFilter();
     initReviewsSlider();
     initSmoothScroll();
+    initSprayPaintEffect();
+    createSprayContainer();
 });
 
 // ========================================
@@ -93,6 +99,374 @@ function createParticles() {
         particle.style.height = particle.style.width;
         particlesContainer.appendChild(particle);
     }
+}
+
+// ========================================
+// Spray Paint Effect Container
+// ========================================
+function createSprayContainer() {
+    const sprayContainer = document.createElement('div');
+    sprayContainer.id = 'sprayContainer';
+    sprayContainer.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9998;
+        overflow: hidden;
+    `;
+    document.body.appendChild(sprayContainer);
+}
+
+// ========================================
+// Spray Paint Effect - SIDE VIEW REALISTIC
+// ========================================
+function initSprayPaintEffect() {
+    const sprayGun = document.getElementById('sprayGun');
+    const sprayMist = document.getElementById('sprayMist');
+    let lastScrollTop = 0;
+    let sprayTimeout = null;
+    
+    // Paint colors for particles
+    const paintColors = [
+        '#ff6b35', '#ff8c5a', '#e55a2b',
+        '#ff4500', '#ff6347', '#ffa500',
+        '#ffd700', '#ff1493'
+    ];
+
+    // Create spray cone (mist/fog)
+    function createSprayCone(x, y, angle) {
+        const sprayContainer = document.getElementById('sprayContainer');
+        if (!sprayContainer) return;
+
+        const cone = document.createElement('div');
+        const coneWidth = Math.random() * 40 + 30;
+        const coneLength = Math.random() * 80 + 60;
+        
+        cone.style.cssText = `
+            position: absolute;
+            left: ${x}px;
+            top: ${y}px;
+            width: ${coneLength}px;
+            height: ${coneWidth}px;
+            background: linear-gradient(90deg, 
+                rgba(255, 255, 255, 0.3) 0%, 
+                rgba(255, 255, 255, 0.1) 40%, 
+                transparent 100%);
+            transform-origin: left center;
+            transform: rotate(${angle}deg) translateY(-50%);
+            filter: blur(4px);
+            opacity: 0.6;
+            pointer-events: none;
+            border-radius: 50%;
+        `;
+        
+        sprayContainer.appendChild(cone);
+        
+        const animation = cone.animate([
+            {
+                transform: `rotate(${angle}deg) translateY(-50%) scaleX(1)`,
+                opacity: 0.6
+            },
+            {
+                transform: `rotate(${angle + (Math.random() - 0.5) * 10}deg) translateY(-50%) scaleX(1.3)`,
+                opacity: 0
+            }
+        ], {
+            duration: Math.random() * 400 + 600,
+            easing: 'ease-out'
+        });
+        
+        animation.onfinish = () => cone.remove();
+    }
+
+    // Create paint stream lines
+    function createPaintStream(x, y, angle) {
+        const sprayContainer = document.getElementById('sprayContainer');
+        if (!sprayContainer) return;
+
+        const streamCount = Math.floor(Math.random() * 3 + 2);
+        
+        for (let i = 0; i < streamCount; i++) {
+            setTimeout(() => {
+                const stream = document.createElement('div');
+                const streamLength = Math.random() * 60 + 40;
+                const streamWidth = Math.random() * 2 + 1;
+                const streamAngle = angle + (Math.random() - 0.5) * 15;
+                const color = paintColors[Math.floor(Math.random() * paintColors.length)];
+                
+                stream.className = 'spray-stream';
+                stream.style.cssText = `
+                    position: absolute;
+                    left: ${x}px;
+                    top: ${y + (Math.random() - 0.5) * 20}px;
+                    width: ${streamLength}px;
+                    height: ${streamWidth}px;
+                    background: linear-gradient(90deg, 
+                        ${color} 0%, 
+                        ${color}80 60%, 
+                        transparent 100%);
+                    transform-origin: left center;
+                    transform: rotate(${streamAngle}deg);
+                    opacity: 0.8;
+                    border-radius: 50%;
+                `;
+                
+                sprayContainer.appendChild(stream);
+                
+                const animation = stream.animate([
+                    {
+                        transform: `rotate(${streamAngle}deg) scaleX(1)`,
+                        opacity: 0.8
+                    },
+                    {
+                        transform: `rotate(${streamAngle}deg) scaleX(0.5)`,
+                        opacity: 0
+                    }
+                ], {
+                    duration: Math.random() * 300 + 400,
+                    easing: 'ease-out'
+                });
+                
+                animation.onfinish = () => stream.remove();
+            }, i * 30);
+        }
+    }
+
+    // Create paint droplets
+    function createDroplets(x, y, angle) {
+        const sprayContainer = document.getElementById('sprayContainer');
+        if (!sprayContainer) return;
+
+        const dropletCount = Math.floor(Math.random() * 8 + 5);
+        
+        for (let i = 0; i < dropletCount; i++) {
+            setTimeout(() => {
+                const droplet = document.createElement('div');
+                const size = Math.random() * 5 + 3;
+                const color = paintColors[Math.floor(Math.random() * paintColors.length)];
+                const spreadAngle = angle + (Math.random() - 0.5) * 25;
+                const distance = Math.random() * 100 + 80;
+                
+                const radians = spreadAngle * (Math.PI / 180);
+                const endX = Math.cos(radians) * distance;
+                const endY = Math.sin(radians) * distance;
+                
+                droplet.style.cssText = `
+                    position: absolute;
+                    left: ${x}px;
+                    top: ${y}px;
+                    width: ${size}px;
+                    height: ${size}px;
+                    background: radial-gradient(circle at 30% 30%, 
+                        ${color} 0%, 
+                        ${color}cc 60%, 
+                        ${color}88 100%);
+                    border-radius: 50%;
+                    opacity: 0.9;
+                    pointer-events: none;
+                    box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+                `;
+                
+                sprayContainer.appendChild(droplet);
+                
+                const animation = droplet.animate([
+                    {
+                        transform: 'translate(0, 0) scale(1)',
+                        opacity: 0.9
+                    },
+                    {
+                        transform: `translate(${endX}px, ${endY}px) scale(0.4)`,
+                        opacity: 0
+                    }
+                ], {
+                    duration: Math.random() * 500 + 700,
+                    easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
+                });
+                
+                animation.onfinish = () => droplet.remove();
+            }, i * 40);
+        }
+    }
+
+    // Create fine mist particles
+    function createMistParticles(x, y, angle) {
+        const sprayContainer = document.getElementById('sprayContainer');
+        if (!sprayContainer) return;
+
+        const particleCount = Math.floor(Math.random() * 15 + 10);
+        
+        for (let i = 0; i < particleCount; i++) {
+            setTimeout(() => {
+                const particle = document.createElement('div');
+                const size = Math.random() * 3 + 1;
+                const color = paintColors[Math.floor(Math.random() * paintColors.length)];
+                const spreadAngle = angle + (Math.random() - 0.5) * 30;
+                const distance = Math.random() * 150 + 100;
+                
+                const radians = spreadAngle * (Math.PI / 180);
+                const endX = Math.cos(radians) * distance;
+                const endY = Math.sin(radians) * distance;
+                
+                particle.style.cssText = `
+                    position: absolute;
+                    left: ${x + (Math.random() - 0.5) * 20}px;
+                    top: ${y + (Math.random() - 0.5) * 20}px;
+                    width: ${size}px;
+                    height: ${size}px;
+                    background: ${color};
+                    border-radius: 50%;
+                    opacity: 0.7;
+                    pointer-events: none;
+                    filter: blur(0.5px);
+                `;
+                
+                sprayContainer.appendChild(particle);
+                
+                const animation = particle.animate([
+                    {
+                        transform: 'translate(0, 0) scale(1)',
+                        opacity: 0.7
+                    },
+                    {
+                        transform: `translate(${endX}px, ${endY}px) scale(0.2)`,
+                        opacity: 0
+                    }
+                ], {
+                    duration: Math.random() * 800 + 1200,
+                    easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
+                });
+                
+                animation.onfinish = () => particle.remove();
+            }, i * 25);
+        }
+    }
+
+    // Main spray function
+    function createPaintSpray(x, y, angle, intensity = 1) {
+        // Create spray cone (visible mist)
+        createSprayCone(x, y, angle);
+        
+        // Create paint streams
+        createPaintStream(x, y, angle);
+        
+        // Create droplets
+        createDroplets(x, y, angle);
+        
+        // Create mist particles
+        createMistParticles(x, y, angle);
+    }
+
+    // Throttle function
+    function throttle(func, delay) {
+        let timeoutId;
+        let lastExecTime = 0;
+        
+        return function(...args) {
+            const currentTime = Date.now();
+            
+            if (currentTime - lastExecTime < delay) {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => {
+                    lastExecTime = currentTime;
+                    func.apply(this, args);
+                }, delay);
+            } else {
+                lastExecTime = currentTime;
+                func.apply(this, args);
+            }
+        };
+    }
+
+    // Scroll event handler
+    const handleScroll = throttle(() => {
+        const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const direction = currentScrollTop > lastScrollTop ? 'down' : 'up';
+        const scrollDelta = Math.abs(currentScrollTop - lastScrollTop);
+        
+        if (scrollDelta > 2) {
+            const gunRect = sprayGun ? sprayGun.getBoundingClientRect() : null;
+            
+            // Get nozzle position (left side of gun since it faces left)
+            const sprayX = gunRect ? gunRect.left + 20 : window.innerWidth - 100;
+            const sprayY = gunRect ? gunRect.top + 60 : window.innerHeight / 2;
+            
+            // Angle based on scroll direction
+            const baseAngle = direction === 'down' ? -10 : 10;
+            const angle = baseAngle + (Math.random() - 0.5) * 15;
+            
+            const intensity = Math.min(scrollDelta / 15, 4);
+            
+            // Create spray effect
+            createPaintSpray(sprayX, sprayY, angle, intensity);
+            
+            // Add recoil animation
+            if (sprayGun) {
+                sprayGun.classList.add('spraying');
+                clearTimeout(sprayTimeout);
+                sprayTimeout = setTimeout(() => {
+                    sprayGun.classList.remove('spraying');
+                }, 80);
+            }
+        }
+        
+        lastScrollTop = currentScrollTop;
+        
+        // Move gun based on scroll
+        if (sprayGun) {
+            const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollPercent = currentScrollTop / maxScroll;
+            const gunY = 30 + scrollPercent * 60;
+            const tilt = direction === 'down' ? -3 : 3;
+            sprayGun.style.transform = `translateY(${gunY - 30}px) rotate(${tilt}deg)`;
+        }
+    }, 20);
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    // Mouse spray (continuous when holding)
+    if (window.innerWidth > 768) {
+        let isMouseDown = false;
+        let sprayInterval = null;
+        
+        document.addEventListener('mousedown', () => { isMouseDown = true; });
+        document.addEventListener('mouseup', () => { 
+            isMouseDown = false;
+            if (sprayInterval) {
+                clearInterval(sprayInterval);
+                sprayInterval = null;
+            }
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (isMouseDown) {
+                if (!sprayInterval) {
+                    sprayInterval = setInterval(() => {
+                        const angle = (Math.random() - 0.5) * 20;
+                        createPaintSpray(e.clientX, e.clientY, angle, 0.8);
+                    }, 40);
+                }
+            } else if (Math.random() > 0.9) {
+                createPaintSpray(e.clientX, e.clientY, (Math.random() - 0.5) * 10, 0.2);
+            }
+        });
+    }
+    
+    // Click burst
+    document.addEventListener('click', (e) => {
+        for (let i = 0; i < 4; i++) {
+            setTimeout(() => {
+                createPaintSpray(
+                    e.clientX,
+                    e.clientY,
+                    (Math.random() - 0.5) * 40,
+                    2
+                );
+            }, i * 60);
+        }
+    });
 }
 
 // ========================================

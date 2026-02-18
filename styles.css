@@ -1606,6 +1606,139 @@ section {
 }
 
 /* ========================================
+   SPRAY PAINT GUN - SIDE VIEW (B&W)
+   ======================================== */
+.spray-gun {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 120px;
+    height: 120px;
+    z-index: 9997;
+    pointer-events: none;
+    transition: transform 0.15s ease-out;
+    filter: drop-shadow(3px 3px 6px rgba(0, 0, 0, 0.5));
+}
+
+.spray-gun svg {
+    width: 100%;
+    height: 100%;
+    transform: scaleX(-1); /* Flip to face left */
+}
+
+/* Handle */
+.gun-handle {
+    fill: #1a1a1a;
+}
+
+.gun-handle-grip {
+    fill: #2a2a2a;
+}
+
+/* Body */
+.gun-body {
+    fill: #3a3a3a;
+    stroke: #555;
+    stroke-width: 1;
+}
+
+.gun-body-highlight {
+    fill: #555;
+}
+
+/* Paint tank */
+.gun-tank {
+    fill: #2a2a2a;
+    stroke: #444;
+    stroke-width: 1;
+}
+
+.gun-tank-cap {
+    fill: #1a1a1a;
+}
+
+.gun-tank-window {
+    fill: rgba(255, 255, 255, 0.1);
+    stroke: #444;
+    stroke-width: 1;
+}
+
+/* Nozzle */
+.gun-nozzle-base {
+    fill: #333;
+    stroke: #555;
+    stroke-width: 1;
+}
+
+.gun-nozzle {
+    fill: #222;
+}
+
+.gun-nozzle-tip {
+    fill: #111;
+}
+
+/* Trigger */
+.gun-trigger {
+    fill: #444;
+    stroke: #666;
+    stroke-width: 1;
+    transform-origin: 95px 50px;
+    transition: transform 0.05s;
+}
+
+.spray-gun.spraying .gun-trigger {
+    transform: translateX(-3px) rotate(-5deg);
+}
+
+/* Screws */
+.gun-screw {
+    fill: #666;
+    stroke: #888;
+    stroke-width: 0.5;
+}
+
+/* Spray mist container */
+.spray-mist {
+    position: absolute;
+    top: 50%;
+    right: -50px;
+    width: 200px;
+    height: 100px;
+    pointer-events: none;
+}
+
+/* Recoil animation */
+.spray-gun.spraying {
+    animation: gunRecoil 0.05s infinite;
+}
+
+@keyframes gunRecoil {
+    0%, 100% {
+        transform: translateX(0) rotate(0deg);
+    }
+    50% {
+        transform: translateX(-2px) rotate(-1deg);
+    }
+}
+
+/* Spray stream effect */
+.spray-stream {
+    position: absolute;
+    right: 100px;
+    height: 2px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+    transform-origin: left center;
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* Paint particles */
+.paint-particle {
+    will-change: transform, opacity;
+}
+
+/* ========================================
    ANIMATIONS
    ======================================== */
 @keyframes fadeInUp {
@@ -2892,6 +3025,45 @@ section {
 
     .service-card {
         padding: 15px 12px;
+    }
+    
+    /* Hide spray gun on mobile */
+    .spray-gun {
+        display: none;
+    }
+}
+
+/* Hide spray effect on mobile for performance */
+@media (max-width: 768px) {
+    .spray-gun {
+        width: 50px;
+        height: 50px;
+        bottom: 80px;
+        right: 20px;
+    }
+    
+    .spray-gun-body {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .spray-gun-nozzle {
+        width: 18px;
+        height: 10px;
+        top: 7px;
+        right: -10px;
+    }
+    
+    .spray-gun-handle {
+        width: 10px;
+        height: 25px;
+        bottom: -15px;
+        right: 7px;
+    }
+    
+    .spray-gun-trigger {
+        width: 7px;
+        height: 10px;
     }
 }
 
